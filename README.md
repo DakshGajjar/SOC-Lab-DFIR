@@ -90,10 +90,25 @@ To add your host machine or a VM:
 2.  Point it to the Manager IP: `127.0.0.1` (if running locally).
 3.  Ensure ports `1514` and `1515` are open in your firewall.
 
+## 📡 Distributed Setup (LAN Agents)
+If you want to connect agents from other machines on your network:
+1. **On Host**: Run `python main.py deploy` or `reset`.
+2. **Open Firewall**: Run `New-NetFirewallRule -DisplayName "Wazuh Agent" -Direction Inbound -LocalPort 1514,1515 -Protocol TCP -Action Allow` (Admin PowerShell).
+3. **Port Bridge (Windows Host)**: If Podman binds to 127.0.0.1, run:
+   `netsh interface portproxy add v4tov4 listenport=1515 listenaddress=<YOUR_IP> connectport=1515 connectaddress=127.0.0.1`
+4. **Register Agent**: Point your external agent to `<YOUR_HOST_IP>`.
+
+## 🧪 Testing the Stack
+To verify everything is working, run this on an agent:
+```powershell
+"X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*" | Out-File -FilePath C:\Users\Public\test_alert.txt
+```
+Check the **Wazuh Dashboard** and **AI Triage** tab for results!
+
 ## 🧹 Maintenance
-*   **Check Health:** `python soclab.py health`
-*   **Stop Stack:** `python soclab.py destroy`
-*   **Reset Environment:** `python soclab.py reset` (Wipes all data and starts fresh)
+*   **Check Health:** `python main.py health`
+*   **Stop Stack:** `python main.py destroy`
+*   **Reset Environment:** `python main.py reset` (Wipes all data and starts fresh)
 
 ---
 *Created with Antigravity*
