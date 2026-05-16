@@ -262,12 +262,21 @@ def compose_up(work_dir: pathlib.Path):
     subprocess.run(["podman", "compose", "up", "-d"], cwd=str(work_dir))
 
 
-def wait_for_health():
-    """Wait for all services to become healthy."""
+def wait_for_health(work_dir: pathlib.Path):
+    """Wait for all services to become healthy and push Wazuh template."""
     print("\nWaiting for services to become healthy...")
     try:
         from api_wiring import wait_for_services
         wait_for_services(max_wait=600)
+        
+        # Permanent fix for Wazuh Template issue
+        print("Pushing Wazuh index template...")
+        subprocess.run([
+            "podman", "exec", "wazuh.manager", "bash", "-c",
+            "curl -XPUT -u admin:admin -k -H 'Content-Type: application/json' https://wazuh.indexer:9200/_template/wazuh -d @/etc/filebeat/wazuh-template.json"
+        ], capture_output=True)
+        print("[OK] Wazuh template synchronized.")
+        
     except Exception as e:
         print(f"Health check failed or timed out: {e}")
 
@@ -288,7 +297,7 @@ def main():
         check_prerequisites()
         generate_env_file(work_dir, args.vt_key, args.otx_key)
         compose_up(work_dir)
-        wait_for_health()
+        wait_for_health(work_dir)
         print("\n[OK] SOC Stack deployment complete.")
 
     elif args.command == "destroy":
@@ -299,7 +308,7 @@ def main():
         write_files(work_dir)
         generate_env_file(work_dir, args.vt_key, args.otx_key)
         compose_up(work_dir)
-        wait_for_health()
+        wait_for_health(work_dir)
 
     elif args.command == "health":
         from api_wiring import health_check_all
