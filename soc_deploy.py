@@ -38,6 +38,7 @@ _DOCKER_COMPOSE = """services:
     restart: unless-stopped
     ports:
       - "1514:1514/udp"
+      - "1514:1514"
       - "1515:1515"
       - "55000:55000"
     environment:
