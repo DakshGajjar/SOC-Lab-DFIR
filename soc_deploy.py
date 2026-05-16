@@ -37,10 +37,10 @@ _DOCKER_COMPOSE = """services:
     container_name: wazuh.manager
     restart: unless-stopped
     ports:
-      - "1514:1514/udp"
-      - "1514:1514"
-      - "1515:1515"
-      - "55000:55000"
+      - "0.0.0.0:1514:1514/udp"
+      - "0.0.0.0:1514:1514"
+      - "0.0.0.0:1515:1515"
+      - "0.0.0.0:55000:55000"
     environment:
       - INDEXER_URL=https://wazuh.indexer:9200
       - INDEXER_USERNAME=admin
