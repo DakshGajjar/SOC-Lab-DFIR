@@ -96,4 +96,4 @@ To add your host machine or a VM:
 *   **Reset Environment:** `python soclab.py reset` (Wipes all data and starts fresh)
 
 ---
-*Created with ❤️ by the SOC Lab Builder*
+*Created with Antigravity*
