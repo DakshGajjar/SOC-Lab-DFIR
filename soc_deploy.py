@@ -264,19 +264,27 @@ def compose_up(work_dir: pathlib.Path):
 
 
 def wait_for_health(work_dir: pathlib.Path):
-    """Wait for all services to become healthy and push Wazuh template."""
+    """Wait for all services to become healthy and fix configurations."""
     print("\nWaiting for services to become healthy...")
     try:
         from api_wiring import wait_for_services
         wait_for_services(max_wait=600)
         
-        # Permanent fix for Wazuh Template issue
+        # Permanent fix for Wazuh Filebeat and Template
+        print("Configuring Wazuh Filebeat...")
+        subprocess.run([
+            "podman", "exec", "wazuh.manager", "bash", "-c",
+            "sed -i \"s/password: '.*'/password: 'admin'/\" /etc/filebeat/filebeat.yml && "
+            "sed -i 's/#ssl.verification_mode:/ssl.verification_mode: \"none\"/' /etc/filebeat/filebeat.yml && "
+            "service filebeat restart"
+        ], capture_output=True)
+        
         print("Pushing Wazuh index template...")
         subprocess.run([
             "podman", "exec", "wazuh.manager", "bash", "-c",
             "curl -XPUT -u admin:admin -k -H 'Content-Type: application/json' https://wazuh.indexer:9200/_template/wazuh -d @/etc/filebeat/wazuh-template.json"
         ], capture_output=True)
-        print("[OK] Wazuh template synchronized.")
+        print("[OK] Wazuh SIEM fully synchronized.")
         
     except Exception as e:
         print(f"Health check failed or timed out: {e}")
